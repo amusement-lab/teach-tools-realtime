@@ -18,9 +18,10 @@ app.get("/status/:roomId", TestController.statusRoom);
 app.get("/join-room/:roomId", TestController.joinRoom);
 app.post("/create-room", TestController.createRoom);
 app.post("/add-info/:roomId", TestController.addInfo);
-
-app.get("/events", TestController.eventsHandler);
-app.post("/fact", TestController.addFact);
+app.post(
+  "/change-understand-status/:roomId/:clientId/:understandStatus",
+  TestController.changeUnderstandStatus
+);
 
 const PORT = 3001;
 

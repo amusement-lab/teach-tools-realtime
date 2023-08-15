@@ -9,10 +9,24 @@ interface Fact {
 let clients: { id: number; response: Response }[] = [];
 let facts: Fact[] = [];
 
+enum UnderstandStatus {
+  YES = "YES",
+  NO = "NO",
+  EMPTY = "EMPTY",
+}
+
 interface Room {
   id: string;
-  clients: { id: string; response: Response }[];
   info: string[];
+  admin: {
+    id: string;
+    response?: Response;
+  };
+  clients: {
+    id: string;
+    response: Response;
+    understandStatus: UnderstandStatus;
+  }[];
 }
 
 const rooms: Room[] = [];
@@ -23,14 +37,22 @@ class TestController {
     const roomIndex = rooms.findIndex((room) => room.id === roomId);
     const room = rooms[roomIndex];
 
-    response.json({ ...room, clients: room.clients.length });
+    const roomClients = room.clients.map((client) => ({
+      id: client.id,
+      understandStatus: client.understandStatus,
+    }));
+
+    response.json({ ...room, clients: roomClients });
   }
 
   static createRoom(request: Request, response: Response) {
     const roomData = {
       id: uuid(),
-      clients: [],
       info: [],
+      admin: {
+        id: uuid(),
+      },
+      clients: [],
     };
     rooms.push(roomData);
     response.status(201).json(roomData);
@@ -48,13 +70,22 @@ class TestController {
     const roomIndex = rooms.findIndex((room) => room.id === roomId);
     const room = rooms[roomIndex];
 
-    response.write("data: " + JSON.stringify(room.info) + "\n\n");
-
     const newClient = {
       id: uuid(),
       response,
+      understandStatus: UnderstandStatus.EMPTY,
     };
-    console.log(newClient);
+
+    response.write(
+      "data: " +
+        JSON.stringify({
+          info: room.info,
+          clientId: newClient.id,
+          understandStatus: UnderstandStatus.EMPTY,
+        }) +
+        "\n\n"
+    );
+
     room.clients.push(newClient);
 
     request.on("close", () => {
@@ -76,47 +107,29 @@ class TestController {
     response.status(200).json({ roomId, info });
 
     room.clients.forEach((client) =>
-      client.response.write("data: " + JSON.stringify(room.info) + "\n\n")
+      client.response.write(
+        "data: " + JSON.stringify({ info: room.info }) + "\n\n"
+      )
     );
   }
 
-  // LEGACY CODE and EXAMPLE
-  static eventsHandler(request: Request, response: Response) {
-    const headers = {
-      "Content-Type": "text/event-stream",
-      Connection: "keep-alive",
-      "Cache-Control": "no-cache",
-    };
-    response.writeHead(200, headers);
+  static changeUnderstandStatus(request: Request, response: Response) {
+    const { roomId, clientId, understandStatus } = request.params;
 
-    const data = `data: ${JSON.stringify(facts)}\n\n`;
-    response.write(data);
-
-    const clientId = Date.now();
-    const newClient = {
-      id: clientId,
-      response,
-    };
-
-    clients.push(newClient);
-
-    request.on("close", () => {
-      console.log(`${clientId} Connection closed`);
-      clients = clients.filter((client) => client.id !== clientId);
-    });
-  }
-
-  static sendEventsToAll(newFact: Fact) {
-    clients.forEach((client) =>
-      client.response.write(`data: ${JSON.stringify(newFact)}\n\n`)
+    const roomIndex = rooms.findIndex((room) => room.id === roomId);
+    const room = rooms[roomIndex];
+    const clientIndex = room.clients.findIndex(
+      (client) => client.id === clientId
     );
-  }
+    const client = room.clients[clientIndex];
 
-  static addFact(request: Request, response: Response) {
-    const newFact = request.body;
-    facts.push(newFact);
-    response.json(newFact);
-    return this.sendEventsToAll(newFact);
+    client.understandStatus = understandStatus as UnderstandStatus;
+
+    response.send("ok");
+    // Update to the admin here
+    // room.clients.forEach((client) =>
+    //   client.response.write("data: " + JSON.stringify(room.info) + "\n\n")
+    // );
   }
 }
 
