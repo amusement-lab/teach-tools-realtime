@@ -1,18 +1,37 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import "./App.css";
 
 function App() {
-  const [facts, setFacts] = useState<{ info: string; source: string }[]>([]);
+  const [facts, setFacts] = useState<string[]>([]);
   const [listening, setListening] = useState(false);
 
   if (!listening) {
-    const events = new EventSource("http://localhost:3001/events");
+    const events = new EventSource(
+      "http://localhost:3001/join-room/730bd5ac-bba1-4690-8c8e-df50855ec7c7"
+    );
+
+    // events.addEventListener("eventsource", (e) => {
+    //   console.log(e);
+    // });
+
+    events.onopen = (evt) => {
+      console.log(evt);
+    };
 
     events.onmessage = (event) => {
+      console.log(event.data);
       const parsedData = JSON.parse(event.data);
-
-      setFacts((facts) => facts.concat(parsedData));
+      console.log(parsedData);
+      setFacts(parsedData);
     };
+
+    events.onerror = (evt) => {
+      console.log(evt);
+    };
+
+    // console.log(events.onmessage);
+
+    // console.log(events);
 
     setListening(true);
   }
@@ -48,8 +67,8 @@ function App() {
       <tbody>
         {facts.map((fact, i) => (
           <tr key={i}>
-            <td>{fact.info}</td>
-            <td>{fact.source}</td>
+            <td>{fact}</td>
+            <td>{fact}</td>
           </tr>
         ))}
       </tbody>
