@@ -15,7 +15,7 @@ function App() {
   const [clientId, setClientId] = useState<string>("");
   const [listening, setListening] = useState(false);
 
-  const roomId = "564b0af1-65c3-47ba-a1a4-81b57e486b1d";
+  const roomId = "490930d7-38c7-4d83-8a2f-134ddc29c917";
 
   if (!listening) {
     const events = new EventSource("http://localhost:3001/join-room/" + roomId);

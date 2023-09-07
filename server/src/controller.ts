@@ -42,7 +42,12 @@ class TestController {
       understandStatus: client.understandStatus,
     }));
 
-    response.json({ ...room, clients: roomClients });
+    response.json({
+      admin: room.admin.id,
+      clients: roomClients,
+      info: room.info,
+      id: room.id,
+    });
   }
 
   static createRoom(request: Request, response: Response) {
@@ -88,6 +93,19 @@ class TestController {
 
     room.clients.push(newClient);
 
+    const roomClients = room.clients.map((client) => ({
+      id: client.id,
+      understandStatus: client.understandStatus,
+    }));
+
+    room.admin.response?.write(
+      "data: " +
+        JSON.stringify({
+          clients: roomClients,
+        }) +
+        "\n\n"
+    );
+
     request.on("close", () => {
       console.log(`${newClient.id} connection closed`);
       room.clients = room.clients.filter(
@@ -130,6 +148,47 @@ class TestController {
     // room.clients.forEach((client) =>
     //   client.response.write("data: " + JSON.stringify(room.info) + "\n\n")
     // );
+  }
+
+  static joinRoomAdmin(request: Request, response: Response) {
+    const headers = {
+      "Content-Type": "text/event-stream",
+      Connection: "keep-alive",
+      "Cache-Control": "no-cache",
+    };
+    response.writeHead(200, headers);
+
+    const { roomId } = request.params;
+    const roomIndex = rooms.findIndex((room) => room.id === roomId);
+    const room = rooms[roomIndex];
+
+    const admin = {
+      id: uuid(),
+      response,
+    };
+
+    room.admin = admin;
+
+    const roomClients = room.clients.map((client) => ({
+      id: client.id,
+      understandStatus: client.understandStatus,
+    }));
+
+    response.write(
+      "data: " +
+        JSON.stringify({
+          id: room.id,
+          info: room.info,
+          adminId: room.admin.id,
+          clients: roomClients,
+        }) +
+        "\n\n"
+    );
+
+    request.on("close", () => {
+      console.log(`Admin ${admin.id} connection closed`);
+      room.clients = room.clients.filter((client) => client.id !== admin.id);
+    });
   }
 }
 
