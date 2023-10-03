@@ -19,13 +19,11 @@ function Room() {
       "http://localhost:3001/join-room-admin/" + roomId
     );
 
-    events.onopen = (event) => {
-      console.log(event);
+    events.onopen = () => {
+      console.log("Success join the room");
     };
 
     events.onmessage = (event) => {
-      console.log(event.data);
-
       const parsedData: {
         id: string;
         info: string[];
@@ -49,8 +47,9 @@ function Room() {
       }
     };
 
-    events.onerror = (evt) => {
-      console.log(evt);
+    events.onerror = () => {
+      events.close();
+      console.log("Failed join room");
     };
 
     setListening(true);
@@ -68,7 +67,8 @@ function Room() {
 
   return (
     <div>
-      <div>{adminId}</div>
+      <div>Admin Id : {adminId}</div>
+      <div>Room Id : {localStorage.getItem("roomId")}</div>
 
       {clients.map((client, i) => (
         <div key={i}>{client.id}</div>

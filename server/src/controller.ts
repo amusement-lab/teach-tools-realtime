@@ -161,44 +161,51 @@ class TestController {
   }
 
   static joinRoomAdmin(request: Request, response: Response) {
-    const headers = {
-      "Content-Type": "text/event-stream",
-      Connection: "keep-alive",
-      "Cache-Control": "no-cache",
-    };
-    response.writeHead(200, headers);
-
     const { roomId } = request.params;
     const roomIndex = rooms.findIndex((room) => room.id === roomId);
     const room = rooms[roomIndex];
 
-    const admin = {
-      id: uuid(),
-      response,
-    };
+    if (room) {
+      const headers = {
+        "Content-Type": "text/event-stream",
+        Connection: "keep-alive",
+        "Cache-Control": "no-cache",
+      };
+      response.writeHead(200, headers);
 
-    room.admin = admin;
+      const admin = {
+        id: uuid(),
+        response,
+      };
 
-    const roomClients = room.clients.map((client) => ({
-      id: client.id,
-      understandStatus: client.understandStatus,
-    }));
+      room.admin = admin;
 
-    response.write(
-      "data: " +
-        JSON.stringify({
-          id: room.id,
-          info: room.info,
-          adminId: room.admin.id,
-          clients: roomClients,
-        }) +
-        "\n\n"
-    );
+      const roomClients = room.clients.map((client) => ({
+        id: client.id,
+        understandStatus: client.understandStatus,
+      }));
 
-    request.on("close", () => {
-      console.log(`Admin ${admin.id} connection closed`);
-      room.clients = room.clients.filter((client) => client.id !== admin.id);
-    });
+      response.write(
+        "data: " +
+          JSON.stringify({
+            id: room.id,
+            info: room.info,
+            adminId: room.admin.id,
+            clients: roomClients,
+          }) +
+          "\n\n"
+      );
+
+      request.on("close", () => {
+        console.log(`Admin ${admin.id} connection closed`);
+        room.clients = room.clients.filter((client) => client.id !== admin.id);
+      });
+    } else {
+      response.json({ message: "Room is not found" });
+      request.on("close", () => {
+        console.log(`${roomId} is not found, connection closed`);
+      });
+    }
   }
 }
 
