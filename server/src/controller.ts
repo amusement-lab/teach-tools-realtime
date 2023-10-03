@@ -37,17 +37,23 @@ class TestController {
     const roomIndex = rooms.findIndex((room) => room.id === roomId);
     const room = rooms[roomIndex];
 
-    const roomClients = room.clients.map((client) => ({
-      id: client.id,
-      understandStatus: client.understandStatus,
-    }));
+    if (room) {
+      const roomClients = room.clients.map((client) => ({
+        id: client.id,
+        understandStatus: client.understandStatus,
+      }));
 
-    response.json({
-      admin: room.admin.id,
-      clients: roomClients,
-      info: room.info,
-      id: room.id,
-    });
+      response.json({
+        id: room.id,
+        adminId: room.admin.id,
+        clients: roomClients,
+        info: room.info,
+      });
+    } else if (!room) {
+      response.status(404).json({
+        message: "Room not found",
+      });
+    }
   }
 
   static createRoom(request: Request, response: Response) {
@@ -91,6 +97,8 @@ class TestController {
         "\n\n"
     );
 
+    console.log(room);
+
     room.clients.push(newClient);
 
     const roomClients = room.clients.map((client) => ({
@@ -98,13 +106,15 @@ class TestController {
       understandStatus: client.understandStatus,
     }));
 
-    room.admin.response?.write(
-      "data: " +
-        JSON.stringify({
-          clients: roomClients,
-        }) +
-        "\n\n"
-    );
+    if (room.admin.response) {
+      room.admin.response?.write(
+        "data: " +
+          JSON.stringify({
+            clients: roomClients,
+          }) +
+          "\n\n"
+      );
+    }
 
     request.on("close", () => {
       console.log(`${newClient.id} connection closed`);

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import "./App.css";
 
 enum UnderstandStatus {
   YES = "YES",
@@ -7,21 +6,21 @@ enum UnderstandStatus {
   EMPTY = "EMPTY",
 }
 
-function App() {
+function Room() {
   const [facts, setFacts] = useState<string[]>([]);
   const [adminId, setAdminId] = useState<string>("");
   const [clients, setClients] = useState<{ id: string }[]>([]);
   const [listening, setListening] = useState(false);
 
-  const roomId = "490930d7-38c7-4d83-8a2f-134ddc29c917";
+  const roomId = localStorage.getItem("roomId");
 
   if (!listening) {
     const events = new EventSource(
       "http://localhost:3001/join-room-admin/" + roomId
     );
 
-    events.onopen = (evt) => {
-      console.log(evt);
+    events.onopen = (event) => {
+      console.log(event);
     };
 
     events.onmessage = (event) => {
@@ -82,4 +81,4 @@ function App() {
   );
 }
 
-export default App;
+export default Room;
