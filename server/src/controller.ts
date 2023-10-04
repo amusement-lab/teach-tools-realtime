@@ -139,6 +139,10 @@ class TestController {
         "data: " + JSON.stringify({ info: room.info }) + "\n\n"
       )
     );
+
+    room.admin.response?.write(
+      "data: " + JSON.stringify({ info: room.info }) + "\n\n"
+    );
   }
 
   static changeUnderstandStatus(request: Request, response: Response) {

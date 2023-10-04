@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 enum UnderstandStatus {
   YES = "YES",
@@ -11,8 +12,11 @@ function Room() {
   const [adminId, setAdminId] = useState<string>("");
   const [clients, setClients] = useState<{ id: string }[]>([]);
   const [listening, setListening] = useState(false);
+  const [failedStatus, setFailedStatus] = useState(false);
 
   const roomId = localStorage.getItem("roomId");
+
+  const navigate = useNavigate();
 
   if (!listening) {
     const events = new EventSource(
@@ -49,35 +53,64 @@ function Room() {
 
     events.onerror = () => {
       events.close();
-      console.log("Failed join room");
+      setFailedStatus(true);
     };
 
     setListening(true);
   }
 
-  // async function changeStatus() {
-  //   console.log(roomId, clientId);
-  //   const res = await fetch(
-  //     `http://localhost:3001/change-understand-status/${roomId}/${clientId}/YES`,
-  //     { method: "POST" }
-  //   );
-  //   const json = await res.json();
-  //   console.log(json);
-  // }
+  async function onFailedRoom() {
+    navigate("/");
+  }
+
+  const [info, setInfo] = useState<string>("");
+
+  async function onSubmitInfo() {
+    console.log(roomId);
+    const res = await fetch(`http://localhost:3001/add-info/${roomId}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ info }),
+      method: "POST",
+    });
+    const json = await res.json();
+    console.log(json);
+  }
 
   return (
-    <div>
-      <div>Admin Id : {adminId}</div>
-      <div>Room Id : {localStorage.getItem("roomId")}</div>
+    <>
+      {failedStatus ? (
+        <div>
+          <p>Failed to join the room</p>
+          <button onClick={onFailedRoom}>Back to home</button>
+        </div>
+      ) : (
+        <div>
+          <div>Admin Id : {adminId}</div>
+          <div>Room Id : {localStorage.getItem("roomId")}</div>
 
-      {clients.map((client, i) => (
-        <div key={i}>{client.id}</div>
-      ))}
+          <input
+            type="text"
+            name="info"
+            value={info}
+            onChange={(e) => setInfo(e.target.value)}
+          />
 
-      {facts.map((fact, i) => (
-        <div key={i}>{fact}</div>
-      ))}
-    </div>
+          <button onClick={onSubmitInfo}>Submit info</button>
+
+          <p>Info List</p>
+          {facts.map((fact, i) => (
+            <div key={i}>{fact}</div>
+          ))}
+
+          <p>Clients List</p>
+          {clients.map((client, i) => (
+            <div key={i}>{client.id}</div>
+          ))}
+        </div>
+      )}
+    </>
   );
 }
 
