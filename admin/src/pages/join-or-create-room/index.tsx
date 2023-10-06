@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Room } from "../../entities/room.entity";
+import { RoomCreatedResponse } from "../../entities/room.entity";
 
 function JoinOrCreateRoom() {
   const [roomId, setRoomId] = useState<string>("");
@@ -11,9 +11,9 @@ function JoinOrCreateRoom() {
     const res = await fetch(`http://localhost:3001/create-room`, {
       method: "POST",
     });
-    const roomData: Room = await res.json();
-    console.log(roomData.id);
-    localStorage.setItem("roomId", roomData.id);
+    const room: RoomCreatedResponse = await res.json();
+    console.log(room.id);
+    localStorage.setItem("roomId", room.id);
     navigate("/room");
   }
 

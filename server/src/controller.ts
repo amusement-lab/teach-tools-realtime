@@ -66,7 +66,9 @@ class TestController {
       clients: [],
     };
     rooms.push(roomData);
-    response.status(201).json(roomData);
+    response
+      .status(201)
+      .json({ id: roomData.id, message: "Success create room" });
   }
 
   static joinRoom(request: Request, response: Response) {
@@ -193,8 +195,8 @@ class TestController {
         "data: " +
           JSON.stringify({
             id: room.id,
-            info: room.info,
             adminId: room.admin.id,
+            info: room.info,
             clients: roomClients,
           }) +
           "\n\n"

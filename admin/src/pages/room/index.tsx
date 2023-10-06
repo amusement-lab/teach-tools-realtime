@@ -1,11 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-enum UnderstandStatus {
-  YES = "YES",
-  NO = "NO",
-  EMPTY = "EMPTY",
-}
+import { RoomMessage } from "../../entities/room.entity";
 
 function Room() {
   const [facts, setFacts] = useState<string[]>([]);
@@ -28,15 +23,7 @@ function Room() {
     };
 
     events.onmessage = (event) => {
-      const parsedData: {
-        id: string;
-        info: string[];
-        adminId: string;
-        clients: {
-          id: string;
-          understandStatus: UnderstandStatus;
-        }[];
-      } = JSON.parse(event.data);
+      const parsedData: RoomMessage = JSON.parse(event.data);
 
       if (parsedData.adminId) {
         setAdminId(parsedData.adminId);
@@ -59,7 +46,7 @@ function Room() {
     setListening(true);
   }
 
-  async function onFailedRoom() {
+  async function onBackToHome() {
     navigate("/");
   }
 
@@ -75,6 +62,7 @@ function Room() {
       method: "POST",
     });
     const json = await res.json();
+    setInfo("");
     console.log(json);
   }
 
@@ -83,7 +71,7 @@ function Room() {
       {failedStatus ? (
         <div>
           <p>Failed to join the room</p>
-          <button onClick={onFailedRoom}>Back to home</button>
+          <button onClick={onBackToHome}>Back to home</button>
         </div>
       ) : (
         <div>
