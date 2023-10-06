@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./App.css";
+import { RoomClientMessage } from "../../entities/room.entity";
 
 enum UnderstandStatus {
   YES = "YES",
@@ -15,10 +15,13 @@ function App() {
   const [clientId, setClientId] = useState<string>("");
   const [listening, setListening] = useState(false);
 
-  const roomId = "490930d7-38c7-4d83-8a2f-134ddc29c917";
+  const roomId = localStorage.getItem("roomId");
+  const name = localStorage.getItem("name");
 
   if (!listening) {
-    const events = new EventSource("http://localhost:3001/join-room/" + roomId);
+    const events = new EventSource(
+      `http://localhost:3001/join-room/${roomId}/${name}`
+    );
 
     events.onopen = (evt) => {
       console.log(evt);
@@ -27,11 +30,7 @@ function App() {
     events.onmessage = (event) => {
       console.log(event.data);
 
-      const parsedData: {
-        clientId?: string;
-        info?: string[];
-        understandStatus?: UnderstandStatus;
-      } = JSON.parse(event.data);
+      const parsedData: RoomClientMessage = JSON.parse(event.data);
 
       if (parsedData.clientId) {
         setClientId(parsedData.clientId);
@@ -65,8 +64,9 @@ function App() {
 
   return (
     <div>
-      <div>{clientId}</div>
-      <div>{understandStatus}</div>
+      <div>Client ID: {clientId}</div>
+      <div>Client Name: {name}</div>
+      <div>Understand Status: {understandStatus}</div>
       <button onClick={() => changeStatus()}>Change</button>
       {facts.map((fact, i) => (
         <div key={i}>{fact}</div>

@@ -15,7 +15,7 @@ app.use(cors());
 app.use(morgan("dev"));
 
 app.get("/status/:roomId", TestController.statusRoom);
-app.get("/join-room/:roomId", TestController.joinRoom);
+app.get("/join-room/:roomId/:name", TestController.joinRoom);
 app.get("/join-room-admin/:roomId", TestController.joinRoomAdmin);
 app.post("/create-room", TestController.createRoom);
 app.post("/add-info/:roomId", TestController.addInfo);

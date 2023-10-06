@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { RoomMessage } from "../../entities/room.entity";
+import { Client, RoomMessage } from "../../entities/room.entity";
 
 function Room() {
   const [facts, setFacts] = useState<string[]>([]);
   const [adminId, setAdminId] = useState<string>("");
-  const [clients, setClients] = useState<{ id: string }[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [listening, setListening] = useState(false);
   const [failedStatus, setFailedStatus] = useState(false);
 
@@ -30,6 +30,7 @@ function Room() {
       }
 
       if (parsedData.clients) {
+        console.log(parsedData.clients);
         setClients(parsedData.clients);
       }
 
@@ -93,8 +94,13 @@ function Room() {
           ))}
 
           <p>Clients List</p>
-          {clients.map((client, i) => (
-            <div key={i}>{client.id}</div>
+          {clients.map((client) => (
+            <div key={client.id}>
+              <div>Client ID: {client.id}</div>
+              <div>Client Name: {client.name}</div>
+              <div>Understand Status: {client.understandStatus}</div>
+              <br />
+            </div>
           ))}
         </div>
       )}

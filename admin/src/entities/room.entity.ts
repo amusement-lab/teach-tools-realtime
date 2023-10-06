@@ -9,8 +9,9 @@ export enum UnderstandStatus {
   EMPTY = "EMPTY",
 }
 
-interface Client {
+export interface Client {
   id: string;
+  name: string;
   understandStatus: UnderstandStatus;
 }
 

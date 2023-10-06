@@ -24,6 +24,7 @@ interface Room {
   };
   clients: {
     id: string;
+    name: string;
     response: Response;
     understandStatus: UnderstandStatus;
   }[];
@@ -79,12 +80,13 @@ class TestController {
     };
     response.writeHead(200, headers);
 
-    const { roomId } = request.params;
+    const { roomId, name } = request.params;
     const roomIndex = rooms.findIndex((room) => room.id === roomId);
     const room = rooms[roomIndex];
 
     const newClient = {
       id: uuid(),
+      name,
       response,
       understandStatus: UnderstandStatus.EMPTY,
     };
@@ -93,6 +95,7 @@ class TestController {
       "data: " +
         JSON.stringify({
           info: room.info,
+          name: newClient.name,
           clientId: newClient.id,
           understandStatus: UnderstandStatus.EMPTY,
         }) +
@@ -105,6 +108,7 @@ class TestController {
 
     const roomClients = room.clients.map((client) => ({
       id: client.id,
+      name: client.name,
       understandStatus: client.understandStatus,
     }));
 
@@ -160,10 +164,23 @@ class TestController {
     client.understandStatus = understandStatus as UnderstandStatus;
 
     response.send("ok");
-    // Update to the admin here
-    // room.clients.forEach((client) =>
-    //   client.response.write("data: " + JSON.stringify(room.info) + "\n\n")
-    // );
+
+    // Update for admin page
+    const roomClients = room.clients.map((client) => ({
+      id: client.id,
+      name: client.name,
+      understandStatus: client.understandStatus,
+    }));
+
+    if (room.admin.response) {
+      room.admin.response?.write(
+        "data: " +
+          JSON.stringify({
+            clients: roomClients,
+          }) +
+          "\n\n"
+      );
+    }
   }
 
   static joinRoomAdmin(request: Request, response: Response) {
@@ -186,8 +203,10 @@ class TestController {
 
       room.admin = admin;
 
+      // Update for admin page
       const roomClients = room.clients.map((client) => ({
         id: client.id,
+        name: client.name,
         understandStatus: client.understandStatus,
       }));
 
