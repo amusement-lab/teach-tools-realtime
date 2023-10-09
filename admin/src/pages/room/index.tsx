@@ -96,16 +96,28 @@ function Room() {
 
             <div className="grid grid-cols-4 gap-[16px] mt-[20px] w-full">
               {clients.map((client) => (
-                <Card key={client.id}>
+                <Card
+                  key={client.id}
+                  className={
+                    client.understandStatus === 'YES'
+                      ? 'bg-red-200'
+                      : client.understandStatus === 'NO'
+                      ? 'bg-green-200'
+                      : ''
+                  }
+                >
                   <CardHeader>
                     <CardTitle>{client.name}</CardTitle>
                   </CardHeader>
 
                   <CardContent>
-                    <CardDescription>Need Help!</CardDescription>
-                    <CardDescription>
-                      Understand Status: {client.understandStatus}
-                    </CardDescription>
+                    {client.understandStatus === 'YES' ? (
+                      <p className="text-md font-medium">Need Help!</p>
+                    ) : client.understandStatus === 'NO' ? (
+                      <p className="text-md font-medium">All Good!</p>
+                    ) : (
+                      <p className="text-md font-medium">-</p>
+                    )}
                   </CardContent>
                 </Card>
               ))}
