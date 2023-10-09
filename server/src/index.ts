@@ -23,6 +23,10 @@ app.post(
   "/change-understand-status/:roomId/:clientId/:understandStatus",
   TestController.changeUnderstandStatus
 );
+app.post(
+  "/reset-understand-status/:roomId",
+  TestController.resetAllUnderstandStatus
+);
 
 const PORT = 3001;
 

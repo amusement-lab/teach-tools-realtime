@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Client, RoomMessage } from '../../entities/room.entity';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
+import { Client, RoomMessage } from "@/entities/room.entity";
 import {
   Card,
   CardContent,
@@ -9,31 +9,33 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 function Room() {
   const [facts, setFacts] = useState<string[]>([]);
-  const [adminId, setAdminId] = useState<string>('');
+  const [adminId, setAdminId] = useState<string>("");
   const [clients, setClients] = useState<Client[]>([]);
   const [listening, setListening] = useState(false);
   const [failedStatus, setFailedStatus] = useState(false);
 
-  const roomId = localStorage.getItem('roomId');
+  const roomId = localStorage.getItem("roomId");
 
   const navigate = useNavigate();
 
   if (!listening) {
     const events = new EventSource(
-      'http://localhost:3001/join-room-admin/' + roomId
+      "http://localhost:3001/join-room-admin/" + roomId
     );
 
     events.onopen = () => {
-      console.log('Success join the room');
+      console.log("Success join the room");
     };
 
     events.onmessage = (event) => {
+      console.log(event.data);
+
       const parsedData: RoomMessage = JSON.parse(event.data);
 
       if (parsedData.adminId) {
@@ -41,7 +43,6 @@ function Room() {
       }
 
       if (parsedData.clients) {
-        console.log(parsedData.clients);
         setClients(parsedData.clients);
       }
 
@@ -59,23 +60,33 @@ function Room() {
   }
 
   async function onBackToHome() {
-    navigate('/');
+    navigate("/");
   }
 
-  const [info, setInfo] = useState<string>('');
+  const [info, setInfo] = useState<string>("");
 
   async function onSubmitInfo(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     console.log(roomId);
     const res = await fetch(`http://localhost:3001/add-info/${roomId}`, {
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ info }),
-      method: 'POST',
+      method: "POST",
     });
     const json = await res.json();
-    setInfo('');
+    setInfo("");
+    console.log(json);
+  }
+
+  async function onResetStatus() {
+    console.log("Reset Clicked");
+    const res = await fetch(
+      `http://localhost:3001/reset-understand-status/${roomId}`,
+      { method: "POST" }
+    );
+    const json = await res.json();
     console.log(json);
   }
 
@@ -91,7 +102,8 @@ function Room() {
           <section className="flex flex-col w-full">
             <div className="flex flex-col">
               <span>Admin Id : {adminId}</span>
-              <span>Room Id : {localStorage.getItem('roomId')}</span>
+              <span>Room Id : {localStorage.getItem("roomId")}</span>
+              <Button onClick={onResetStatus}>Reset Status</Button>
             </div>
 
             <div className="grid grid-cols-4 gap-[16px] mt-[20px] w-full">
@@ -99,11 +111,11 @@ function Room() {
                 <Card
                   key={client.id}
                   className={
-                    client.understandStatus === 'YES'
-                      ? 'bg-red-200'
-                      : client.understandStatus === 'NO'
-                      ? 'bg-green-200'
-                      : ''
+                    client.understandStatus === "YES"
+                      ? "bg-red-200"
+                      : client.understandStatus === "NO"
+                      ? "bg-green-200"
+                      : ""
                   }
                 >
                   <CardHeader>
@@ -111,9 +123,9 @@ function Room() {
                   </CardHeader>
 
                   <CardContent>
-                    {client.understandStatus === 'YES' ? (
+                    {client.understandStatus === "YES" ? (
                       <p className="text-md font-medium">Need Help!</p>
-                    ) : client.understandStatus === 'NO' ? (
+                    ) : client.understandStatus === "NO" ? (
                       <p className="text-md font-medium">All Good!</p>
                     ) : (
                       <p className="text-md font-medium">-</p>

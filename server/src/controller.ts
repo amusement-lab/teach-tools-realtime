@@ -102,8 +102,6 @@ class TestController {
         "\n\n"
     );
 
-    console.log(room);
-
     room.clients.push(newClient);
 
     const roomClients = room.clients.map((client) => ({
@@ -162,8 +160,6 @@ class TestController {
     const client = room.clients[clientIndex];
 
     client.understandStatus = understandStatus as UnderstandStatus;
-
-    response.send("ok");
 
     // Update for admin page
     const roomClients = room.clients.map((client) => ({
@@ -230,6 +226,43 @@ class TestController {
       request.on("close", () => {
         console.log(`${roomId} is not found, connection closed`);
       });
+    }
+  }
+
+  static resetAllUnderstandStatus(request: Request, response: Response) {
+    const { roomId } = request.params;
+
+    const roomIndex = rooms.findIndex((room) => room.id === roomId);
+    const room = rooms[roomIndex];
+
+    room.clients.forEach(
+      (client) => (client.understandStatus = UnderstandStatus.EMPTY)
+    );
+
+    // Update for client page
+    room.clients.forEach((client) =>
+      client.response.write(
+        "data: " +
+          JSON.stringify({ understandStatus: client.understandStatus }) +
+          "\n\n"
+      )
+    );
+
+    // Update for admin page
+    const roomClients = room.clients.map((client) => ({
+      id: client.id,
+      name: client.name,
+      understandStatus: client.understandStatus,
+    }));
+
+    if (room.admin.response) {
+      room.admin.response?.write(
+        "data: " +
+          JSON.stringify({
+            clients: roomClients,
+          }) +
+          "\n\n"
+      );
     }
   }
 }

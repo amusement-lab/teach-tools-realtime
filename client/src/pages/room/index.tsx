@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { RoomClientMessage } from '../../entities/room.entity';
+import { useState } from "react";
+import { RoomClientMessage } from "../../entities/room.entity";
 
 import {
   Card,
@@ -7,13 +7,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 enum UnderstandStatus {
-  YES = 'YES',
-  NO = 'NO',
-  EMPTY = 'EMPTY',
+  YES = "YES",
+  NO = "NO",
+  EMPTY = "EMPTY",
 }
 
 function App() {
@@ -21,11 +21,11 @@ function App() {
   const [understandStatus, setUnderstandStatus] = useState<UnderstandStatus>(
     UnderstandStatus.EMPTY
   );
-  const [clientId, setClientId] = useState<string>('');
+  const [clientId, setClientId] = useState<string>("");
   const [listening, setListening] = useState(false);
 
-  const roomId = localStorage.getItem('roomId');
-  const name = localStorage.getItem('name');
+  const roomId = localStorage.getItem("roomId");
+  const name = localStorage.getItem("name");
 
   if (!listening) {
     const events = new EventSource(
@@ -61,10 +61,12 @@ function App() {
     setListening(true);
   }
 
-  async function changeStatus(status: string) {
+  async function changeStatus(status: UnderstandStatus) {
+    setUnderstandStatus(status);
+
     const res = await fetch(
       `http://localhost:3001/change-understand-status/${roomId}/${clientId}/${status}`,
-      { method: 'POST' }
+      { method: "POST" }
     );
     const json = await res.json();
     console.log(json);
@@ -74,7 +76,7 @@ function App() {
     <section className="flex gap-[40px] p-[40px] h-screen">
       <div className="flex flex-col w-full">
         <div className="flex flex-col">
-          <span>Room Id : {localStorage.getItem('roomId')}</span>
+          <span>Room Id : {localStorage.getItem("roomId")}</span>
           <div>Client ID: {clientId}</div>
           <div>Client Name: {name}</div>
           <div>Understand Status: {understandStatus}</div>
@@ -84,11 +86,17 @@ function App() {
           <h1 className="font-bold text-[32px]">Are You Need Help?</h1>
 
           <div className="flex flex-row gap-[16px] mt-[10px]">
-            <Button className="bg-red-500" onClick={() => changeStatus('YES')}>
+            <Button
+              className="bg-red-500"
+              onClick={() => changeStatus(UnderstandStatus.YES)}
+            >
               Yes, I Need!
             </Button>
 
-            <Button className="bg-green-500" onClick={() => changeStatus('NO')}>
+            <Button
+              className="bg-green-500"
+              onClick={() => changeStatus(UnderstandStatus.NO)}
+            >
               No, Im Good
             </Button>
           </div>
