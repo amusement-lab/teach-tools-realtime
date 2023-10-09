@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { RoomClientMessage } from "../../entities/room.entity";
+import { useState } from 'react';
+import { RoomClientMessage } from '../../entities/room.entity';
 
 enum UnderstandStatus {
-  YES = "YES",
-  NO = "NO",
-  EMPTY = "EMPTY",
+  YES = 'YES',
+  NO = 'NO',
+  EMPTY = 'EMPTY',
 }
 
 function App() {
@@ -12,11 +12,11 @@ function App() {
   const [understandStatus, setUnderstandStatus] = useState<UnderstandStatus>(
     UnderstandStatus.EMPTY
   );
-  const [clientId, setClientId] = useState<string>("");
+  const [clientId, setClientId] = useState<string>('');
   const [listening, setListening] = useState(false);
 
-  const roomId = localStorage.getItem("roomId");
-  const name = localStorage.getItem("name");
+  const roomId = localStorage.getItem('roomId');
+  const name = localStorage.getItem('name');
 
   if (!listening) {
     const events = new EventSource(
@@ -55,8 +55,8 @@ function App() {
   async function changeStatus() {
     console.log(roomId, clientId);
     const res = await fetch(
-      `http://localhost:3001/change-understand-status/${roomId}/${clientId}/YES`,
-      { method: "POST" }
+      `http://localhost:3001/change-understand-status/${roomId}/${clientId}/NO`,
+      { method: 'POST' }
     );
     const json = await res.json();
     console.log(json);
