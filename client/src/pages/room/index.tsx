@@ -1,10 +1,19 @@
-import { useState } from "react";
-import { RoomClientMessage } from "../../entities/room.entity";
+import { useState } from 'react';
+import { RoomClientMessage } from '../../entities/room.entity';
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 enum UnderstandStatus {
-  YES = "YES",
-  NO = "NO",
-  EMPTY = "EMPTY",
+  YES = 'YES',
+  NO = 'NO',
+  EMPTY = 'EMPTY',
 }
 
 function App() {
@@ -12,11 +21,11 @@ function App() {
   const [understandStatus, setUnderstandStatus] = useState<UnderstandStatus>(
     UnderstandStatus.EMPTY
   );
-  const [clientId, setClientId] = useState<string>("");
+  const [clientId, setClientId] = useState<string>('');
   const [listening, setListening] = useState(false);
 
-  const roomId = localStorage.getItem("roomId");
-  const name = localStorage.getItem("name");
+  const roomId = localStorage.getItem('roomId');
+  const name = localStorage.getItem('name');
 
   if (!listening) {
     const events = new EventSource(
@@ -52,26 +61,57 @@ function App() {
     setListening(true);
   }
 
-  async function changeStatus() {
-    console.log(roomId, clientId);
+  async function changeStatus(status: string) {
     const res = await fetch(
-      `http://localhost:3001/change-understand-status/${roomId}/${clientId}/YES`,
-      { method: "POST" }
+      `http://localhost:3001/change-understand-status/${roomId}/${clientId}/${status}`,
+      { method: 'POST' }
     );
     const json = await res.json();
     console.log(json);
   }
 
   return (
-    <div>
-      <div>Client ID: {clientId}</div>
-      <div>Client Name: {name}</div>
-      <div>Understand Status: {understandStatus}</div>
-      <button onClick={() => changeStatus()}>Change</button>
-      {facts.map((fact, i) => (
-        <div key={i}>{fact}</div>
-      ))}
-    </div>
+    <section className="flex gap-[40px] p-[40px] h-screen">
+      <div className="flex flex-col w-full">
+        <div className="flex flex-col">
+          <span>Room Id : {localStorage.getItem('roomId')}</span>
+          <div>Client ID: {clientId}</div>
+          <div>Client Name: {name}</div>
+          <div>Understand Status: {understandStatus}</div>
+        </div>
+
+        <div className="flex flex-col justify-center items-center h-[400px] w-full">
+          <h1 className="font-bold text-[32px]">Are You Need Help?</h1>
+
+          <div className="flex flex-row gap-[16px] mt-[10px]">
+            <Button className="bg-red-500" onClick={() => changeStatus('YES')}>
+              Yes, I Need!
+            </Button>
+
+            <Button className="bg-green-500" onClick={() => changeStatus('NO')}>
+              No, Im Good
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-[400px]">
+        <Card className="flex flex-col justify-between h-full">
+          <div>
+            <CardHeader>
+              <CardTitle>Chat Panel</CardTitle>
+              <CardDescription>Info List</CardDescription>
+            </CardHeader>
+
+            <CardContent>
+              {facts.map((fact, i) => (
+                <div key={i}>{fact}</div>
+              ))}
+            </CardContent>
+          </div>
+        </Card>
+      </div>
+    </section>
   );
 }
 
