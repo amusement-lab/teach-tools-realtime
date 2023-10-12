@@ -73,59 +73,69 @@ class TestController {
   }
 
   static joinRoom(request: Request, response: Response) {
-    const headers = {
-      "Content-Type": "text/event-stream",
-      Connection: "keep-alive",
-      "Cache-Control": "no-cache",
-    };
-    response.writeHead(200, headers);
+    
 
     const { roomId, name } = request.params;
     const roomIndex = rooms.findIndex((room) => room.id === roomId);
     const room = rooms[roomIndex];
 
-    const newClient = {
-      id: uuid(),
-      name,
-      response,
-      understandStatus: UnderstandStatus.EMPTY,
-    };
+    if (room) {
+      const headers = {
+        "Content-Type": "text/event-stream",
+        Connection: "keep-alive",
+        "Cache-Control": "no-cache",
+      };
 
-    response.write(
-      "data: " +
-        JSON.stringify({
-          info: room.info,
-          name: newClient.name,
-          clientId: newClient.id,
-          understandStatus: UnderstandStatus.EMPTY,
-        }) +
-        "\n\n"
-    );
+      response.writeHead(200, headers);
 
-    room.clients.push(newClient);
+      const newClient = {
+        id: uuid(),
+        name,
+        response,
+        understandStatus: UnderstandStatus.EMPTY,
+      };
 
-    const roomClients = room.clients.map((client) => ({
-      id: client.id,
-      name: client.name,
-      understandStatus: client.understandStatus,
-    }));
-
-    if (room.admin.response) {
-      room.admin.response?.write(
+      response.write(
         "data: " +
           JSON.stringify({
-            clients: roomClients,
+            info: room.info,
+            name: newClient.name,
+            clientId: newClient.id,
+            understandStatus: UnderstandStatus.EMPTY,
           }) +
           "\n\n"
       );
-    }
 
-    request.on("close", () => {
-      console.log(`${newClient.id} connection closed`);
-      room.clients = room.clients.filter(
-        (client) => client.id !== newClient.id
-      );
-    });
+      room.clients.push(newClient);
+
+      const roomClients = room.clients.map((client) => ({
+        id: client.id,
+        name: client.name,
+        understandStatus: client.understandStatus,
+      }));
+
+      if (room.admin.response) {
+        room.admin.response?.write(
+          "data: " +
+            JSON.stringify({
+              clients: roomClients,
+            }) +
+            "\n\n"
+        );
+      }
+
+      request.on("close", () => {
+        console.log(`${newClient.id} connection closed`);
+        room.clients = room.clients.filter(
+          (client) => client.id !== newClient.id
+        );
+      });
+    } else {
+      response.json({ message: "Room is not found" });
+      request.on("close", () => {
+        console.log(`${roomId} is not found, connection closed`);
+      });
+    }
   }
 
   static addInfo(request: Request, response: Response) {

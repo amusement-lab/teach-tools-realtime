@@ -22,8 +22,6 @@ function Room() {
 
   const roomId = localStorage.getItem('roomId');
 
-  const navigate = useNavigate();
-
   if (!listening) {
     const events = new EventSource(
       'http://localhost:3001/join-room-admin/' + roomId
@@ -59,10 +57,6 @@ function Room() {
     setListening(true);
   }
 
-  async function onBackToHome() {
-    navigate('/');
-  }
-
   const [info, setInfo] = useState<string>('');
 
   async function onSubmitInfo(e: React.FormEvent<HTMLFormElement>) {
@@ -88,6 +82,12 @@ function Room() {
     );
     const json = await res.json();
     console.log(json);
+  }
+
+  const navigate = useNavigate();
+
+  function onBackToHome() {
+    navigate('/');
   }
 
   return (
