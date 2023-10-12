@@ -21,9 +21,6 @@ function Room() {
   const [failedStatus, setFailedStatus] = useState(false);
 
   const roomId = localStorage.getItem('roomId');
-
-  const navigate = useNavigate();
-
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
   if (!listening) {
@@ -59,10 +56,6 @@ function Room() {
     setListening(true);
   }
 
-  async function onBackToHome() {
-    navigate('/');
-  }
-
   const [info, setInfo] = useState<string>('');
 
   async function onSubmitInfo(e: React.FormEvent<HTMLFormElement>) {
@@ -87,6 +80,12 @@ function Room() {
     });
     const json = await res.json();
     console.log(json);
+  }
+
+  const navigate = useNavigate();
+
+  function onBackToHome() {
+    navigate('/');
   }
 
   return (
