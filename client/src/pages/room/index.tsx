@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { RoomClientMessage } from "../../entities/room.entity";
+import { useState } from 'react';
+import { RoomClientMessage } from '../../entities/room.entity';
 
 import {
   Card,
@@ -7,13 +7,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 enum UnderstandStatus {
-  YES = "YES",
-  NO = "NO",
-  EMPTY = "EMPTY",
+  YES = 'YES',
+  NO = 'NO',
+  EMPTY = 'EMPTY',
 }
 
 function App() {
@@ -21,11 +21,11 @@ function App() {
   const [understandStatus, setUnderstandStatus] = useState<UnderstandStatus>(
     UnderstandStatus.EMPTY
   );
-  const [clientId, setClientId] = useState<string>("");
+  const [clientId, setClientId] = useState<string>('');
   const [listening, setListening] = useState(false);
 
-  const roomId = localStorage.getItem("roomId");
-  const name = localStorage.getItem("name");
+  const roomId = localStorage.getItem('roomId');
+  const name = localStorage.getItem('name');
 
   if (!listening) {
     const events = new EventSource(
@@ -66,17 +66,17 @@ function App() {
 
     const res = await fetch(
       `http://localhost:3001/change-understand-status/${roomId}/${clientId}/${status}`,
-      { method: "POST" }
+      { method: 'POST' }
     );
     const json = await res.json();
     console.log(json);
   }
 
   return (
-    <section className="flex gap-[40px] p-[40px] h-screen">
-      <div className="flex flex-col w-full">
+    <section className="flex gap-[40px] h-screen">
+      <div className="flex flex-col w-full p-[40px] pr-[400px]">
         <div className="flex flex-col">
-          <span>Room Id : {localStorage.getItem("roomId")}</span>
+          <span>Room Id : {localStorage.getItem('roomId')}</span>
           <div>Client ID: {clientId}</div>
           <div>Client Name: {name}</div>
           <div>Understand Status: {understandStatus}</div>
@@ -103,7 +103,7 @@ function App() {
         </div>
       </div>
 
-      <div className="w-[400px]">
+      <div className="fixed h-full right-0 p-[40px] w-[400px]">
         <Card className="flex flex-col justify-between h-full">
           <div>
             <CardHeader>
@@ -111,9 +111,14 @@ function App() {
               <CardDescription>Info List</CardDescription>
             </CardHeader>
 
-            <CardContent>
+            <CardContent className="flex flex-col gap-[16px] overflow-y-auto pb-[30px] h-[100vh] md:h-[70vh]">
               {facts.map((fact, i) => (
-                <div key={i}>{fact}</div>
+                <p
+                  className="break-words bg-slate-100 px-[22px] py-[10px] rounded-[6px]"
+                  key={i}
+                >
+                  {fact}
+                </p>
               ))}
             </CardContent>
           </div>
