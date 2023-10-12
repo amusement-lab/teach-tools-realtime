@@ -4,9 +4,9 @@ export interface RoomCreatedResponse {
 }
 
 export enum UnderstandStatus {
-  YES = "YES",
-  NO = "NO",
-  EMPTY = "EMPTY",
+  YES = 'YES',
+  NO = 'NO',
+  EMPTY = 'EMPTY',
 }
 
 export interface Client {
@@ -20,4 +20,11 @@ export interface RoomMessage {
   info: string[];
   adminId: string;
   clients: Client[];
+}
+
+export interface RoomClientMessage {
+  clientId: string;
+  name: string;
+  info: string[];
+  understandStatus: UnderstandStatus;
 }

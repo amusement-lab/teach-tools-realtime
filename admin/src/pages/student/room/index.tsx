@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RoomClientMessage } from '../../entities/room.entity';
+import { RoomClientMessage } from '../../../entities/room.entity';
 
 import {
   Card,

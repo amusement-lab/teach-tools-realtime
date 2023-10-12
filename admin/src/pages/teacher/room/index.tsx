@@ -24,10 +24,10 @@ function Room() {
 
   const navigate = useNavigate();
 
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
   if (!listening) {
-    const events = new EventSource(
-      'http://localhost:3001/join-room-admin/' + roomId
-    );
+    const events = new EventSource(`${baseUrl}/join-room-admin/${roomId}`);
 
     events.onopen = () => {
       console.log('Success join the room');
@@ -68,7 +68,7 @@ function Room() {
   async function onSubmitInfo(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     console.log(roomId);
-    const res = await fetch(`http://localhost:3001/add-info/${roomId}`, {
+    const res = await fetch(`${baseUrl}/add-info/${roomId}`, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -82,10 +82,9 @@ function Room() {
 
   async function onResetStatus() {
     console.log('Reset Clicked');
-    const res = await fetch(
-      `http://localhost:3001/reset-understand-status/${roomId}`,
-      { method: 'POST' }
-    );
+    const res = await fetch(`${baseUrl}/reset-understand-status/${roomId}`, {
+      method: 'POST',
+    });
     const json = await res.json();
     console.log(json);
   }
@@ -154,7 +153,10 @@ function Room() {
                   <CardDescription>Info List</CardDescription>
                 </CardHeader>
 
-                <CardContent className="flex flex-col gap-[16px] overflow-y-auto pb-[30px] h-[100vh] md:h-[60vh]">
+                <CardContent
+                  id="chatbox"
+                  className="flex flex-col gap-[16px] overflow-y-auto pb-[30px] h-[100vh] md:h-[60vh]"
+                >
                   {facts.map((fact, i) => (
                     <p
                       className="break-words bg-slate-100 px-[22px] py-[10px] rounded-[6px]"

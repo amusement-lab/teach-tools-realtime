@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RoomCreatedResponse } from '../../entities/room.entity';
+import { RoomCreatedResponse } from '../../../entities/room.entity';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -19,8 +19,10 @@ function JoinOrCreateRoom() {
 
   const navigate = useNavigate();
 
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
   async function createRoom() {
-    const res = await fetch(`http://localhost:3001/create-room`, {
+    const res = await fetch(`${baseUrl}/create-room`, {
       method: 'POST',
     });
     const room: RoomCreatedResponse = await res.json();
