@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { Client, RoomMessage } from "@/entities/room.entity";
+import { Client, RoomMessage } from '@/entities/room.entity';
 import {
   Card,
   CardContent,
@@ -9,28 +9,28 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 function Room() {
   const [facts, setFacts] = useState<string[]>([]);
-  const [adminId, setAdminId] = useState<string>("");
+  const [adminId, setAdminId] = useState<string>('');
   const [clients, setClients] = useState<Client[]>([]);
   const [listening, setListening] = useState(false);
   const [failedStatus, setFailedStatus] = useState(false);
 
-  const roomId = localStorage.getItem("roomId");
+  const roomId = localStorage.getItem('roomId');
 
   const navigate = useNavigate();
 
   if (!listening) {
     const events = new EventSource(
-      "http://localhost:3001/join-room-admin/" + roomId
+      'http://localhost:3001/join-room-admin/' + roomId
     );
 
     events.onopen = () => {
-      console.log("Success join the room");
+      console.log('Success join the room');
     };
 
     events.onmessage = (event) => {
@@ -60,31 +60,31 @@ function Room() {
   }
 
   async function onBackToHome() {
-    navigate("/");
+    navigate('/');
   }
 
-  const [info, setInfo] = useState<string>("");
+  const [info, setInfo] = useState<string>('');
 
   async function onSubmitInfo(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     console.log(roomId);
     const res = await fetch(`http://localhost:3001/add-info/${roomId}`, {
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ info }),
-      method: "POST",
+      method: 'POST',
     });
     const json = await res.json();
-    setInfo("");
+    setInfo('');
     console.log(json);
   }
 
   async function onResetStatus() {
-    console.log("Reset Clicked");
+    console.log('Reset Clicked');
     const res = await fetch(
       `http://localhost:3001/reset-understand-status/${roomId}`,
-      { method: "POST" }
+      { method: 'POST' }
     );
     const json = await res.json();
     console.log(json);
@@ -93,29 +93,39 @@ function Room() {
   return (
     <>
       {failedStatus ? (
-        <section className="flex flex-col gap-[10px] justify-center items-center h-screen w-full">
+        <section className="flex flex-col gap-[10px] justify-center items-center h-screen relative w-full">
           <p className="font-bold text-xl">Failed to join the room</p>
           <Button onClick={onBackToHome}>Back to home</Button>
         </section>
       ) : (
-        <div className="flex gap-[40px] p-[40px] h-screen">
-          <section className="flex flex-col w-full">
-            <div className="flex flex-col">
-              <span>Admin Id : {adminId}</span>
-              <span>Room Id : {localStorage.getItem("roomId")}</span>
-              <Button onClick={onResetStatus}>Reset Status</Button>
+        <section className="flex gap-[40px] h-screen">
+          <div className="flex flex-col w-full px-[40px] py-[40px] pr-[400px]">
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col">
+                <span className="font-bold">Admin Id : {adminId}</span>
+                <span className="font-bold">
+                  Room Id : {localStorage.getItem('roomId')}
+                </span>
+              </div>
+
+              <Button
+                className="bg-yellow-500 hover:bg-yellow-400"
+                onClick={onResetStatus}
+              >
+                Reset Status
+              </Button>
             </div>
 
-            <div className="grid grid-cols-4 gap-[16px] mt-[20px] w-full">
+            <div className="gap-[16px] grid grid-cols-4 mt-[20px] pb-[40px] w-full">
               {clients.map((client) => (
                 <Card
                   key={client.id}
                   className={
-                    client.understandStatus === "YES"
-                      ? "bg-red-200"
-                      : client.understandStatus === "NO"
-                      ? "bg-green-200"
-                      : ""
+                    client.understandStatus === 'YES'
+                      ? 'bg-red-200'
+                      : client.understandStatus === 'NO'
+                      ? 'bg-green-200'
+                      : ''
                   }
                 >
                   <CardHeader>
@@ -123,9 +133,9 @@ function Room() {
                   </CardHeader>
 
                   <CardContent>
-                    {client.understandStatus === "YES" ? (
+                    {client.understandStatus === 'YES' ? (
                       <p className="text-md font-medium">Need Help!</p>
-                    ) : client.understandStatus === "NO" ? (
+                    ) : client.understandStatus === 'NO' ? (
                       <p className="text-md font-medium">All Good!</p>
                     ) : (
                       <p className="text-md font-medium">-</p>
@@ -134,9 +144,9 @@ function Room() {
                 </Card>
               ))}
             </div>
-          </section>
+          </div>
 
-          <section className="w-[400px]">
+          <div className="fixed h-full right-0 p-[40px] w-[400px]">
             <Card className="flex flex-col justify-between h-full">
               <div>
                 <CardHeader>
@@ -144,9 +154,14 @@ function Room() {
                   <CardDescription>Info List</CardDescription>
                 </CardHeader>
 
-                <CardContent>
+                <CardContent className="flex flex-col gap-[16px] overflow-y-auto pb-[30px] h-[100vh] md:h-[60vh]">
                   {facts.map((fact, i) => (
-                    <p key={i}>{fact}</p>
+                    <p
+                      className="break-words bg-slate-100 px-[22px] py-[10px] rounded-[6px]"
+                      key={i}
+                    >
+                      {fact}
+                    </p>
                   ))}
                 </CardContent>
               </div>
@@ -167,8 +182,8 @@ function Room() {
                 </CardFooter>
               </form>
             </Card>
-          </section>
-        </div>
+          </div>
+        </section>
       )}
     </>
   );
