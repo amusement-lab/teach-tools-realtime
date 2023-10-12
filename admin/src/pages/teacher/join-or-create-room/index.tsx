@@ -27,13 +27,13 @@ function JoinOrCreateRoom() {
     });
     const room: RoomCreatedResponse = await res.json();
     localStorage.setItem('roomId', room.id);
-    navigate('/room');
+    navigate('/admin/room');
   }
 
   async function joinRoom(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     localStorage.setItem('roomId', roomId);
-    navigate('/room');
+    navigate('/admin/room');
   }
 
   return (

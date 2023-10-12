@@ -22,7 +22,7 @@ function JoinOrCreateRoom() {
     e.preventDefault();
     localStorage.setItem('roomId', roomId);
     localStorage.setItem('name', name);
-    navigate('/student/room');
+    navigate('/room');
   }
 
   return (

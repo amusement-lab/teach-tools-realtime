@@ -15,7 +15,7 @@ import StudentRoom from './pages/student/room/index.tsx';
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: '/admin',
     element: <LayoutDefault />,
     children: [
       {
@@ -23,13 +23,13 @@ const router = createBrowserRouter([
         element: <JoinOrCreateRoom />,
       },
       {
-        path: '/room',
+        path: '/admin/room',
         element: <Room />,
       },
     ],
   },
   {
-    path: '/student',
+    path: '/',
     element: <LayoutStudent />,
     children: [
       {
@@ -37,7 +37,7 @@ const router = createBrowserRouter([
         element: <StudentJoinRoom />,
       },
       {
-        path: '/student/room',
+        path: '/room',
         element: <StudentRoom />,
       },
     ],

@@ -85,7 +85,7 @@ function Room() {
   const navigate = useNavigate();
 
   function onBackToHome() {
-    navigate('/');
+    navigate('/admin');
   }
 
   return (
