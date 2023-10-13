@@ -17,13 +17,17 @@ export interface Client {
 
 export interface RoomMessage {
   id: string;
-  info: string[];
   adminId: string;
+  info: string[];
   clients: Client[];
 }
 
+export interface JoinClientRoom {
+  id: string;
+}
+
 export interface RoomClientMessage {
-  clientId: string;
+  id: string;
   name: string;
   info: string[];
   understandStatus: UnderstandStatus;

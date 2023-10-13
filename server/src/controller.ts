@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
-import { v4 as uuid } from "uuid";
+import { Request, Response } from 'express';
+import { v4 as uuid } from 'uuid';
 
 interface Fact {
   source: string;
@@ -10,9 +10,9 @@ let clients: { id: number; response: Response }[] = [];
 let facts: Fact[] = [];
 
 enum UnderstandStatus {
-  YES = "YES",
-  NO = "NO",
-  EMPTY = "EMPTY",
+  YES = 'YES',
+  NO = 'NO',
+  EMPTY = 'EMPTY',
 }
 
 interface Room {
@@ -20,12 +20,10 @@ interface Room {
   info: string[];
   admin: {
     id: string;
-    response?: Response;
   };
   clients: {
     id: string;
     name: string;
-    response: Response;
     understandStatus: UnderstandStatus;
   }[];
 }
@@ -33,26 +31,64 @@ interface Room {
 const rooms: Room[] = [];
 
 class TestController {
-  static statusRoom(request: Request, response: Response) {
+  static statusAdminRoom(request: Request, response: Response) {
     const { roomId } = request.params;
     const roomIndex = rooms.findIndex((room) => room.id === roomId);
     const room = rooms[roomIndex];
 
     if (room) {
-      const roomClients = room.clients.map((client) => ({
-        id: client.id,
-        understandStatus: client.understandStatus,
-      }));
+      // const roomClients = room.clients.map((client) => ({
+      //   id: client.id,
+      //   name: client.name,
+      //   understandStatus: client.understandStatus,
+      // }));
 
       response.json({
         id: room.id,
         adminId: room.admin.id,
-        clients: roomClients,
         info: room.info,
+        clients: room.clients,
       });
     } else if (!room) {
       response.status(404).json({
-        message: "Room not found",
+        message: 'Room not found',
+      });
+    }
+  }
+
+  static statusClientRoom(request: Request, response: Response) {
+    const { roomId, clientId, name } = request.params;
+    const roomIndex = rooms.findIndex((room) => room.id === roomId);
+    const room = rooms[roomIndex];
+
+    if (room) {
+      const client = room.clients.findIndex((client) => client.id === clientId);
+      response.json({ ...room.clients[client], info: room.info });
+    } else if (!room) {
+      response.status(404).json({
+        message: 'Room not found',
+      });
+    }
+  }
+
+  static joinClientRoom(request: Request, response: Response) {
+    const { roomId, name } = request.params;
+    const roomIndex = rooms.findIndex((room) => room.id === roomId);
+    const room = rooms[roomIndex];
+
+    if (room) {
+      const newClient = {
+        id: uuid(),
+        name,
+        understandStatus: UnderstandStatus.EMPTY,
+      };
+
+      room.clients.push(newClient);
+
+      response.json({ ...newClient, info: room.info });
+    } else if (!room) {
+      response.status(404).json({
+        message: 'Room not found',
       });
     }
   }
@@ -69,74 +105,72 @@ class TestController {
     rooms.push(roomData);
     response
       .status(201)
-      .json({ id: roomData.id, message: "Success create room" });
+      .json({ id: roomData.id, message: 'Success create room' });
   }
 
-  static joinRoom(request: Request, response: Response) {
-    
+  // static joinRoom(request: Request, response: Response) {
+  //   const { roomId, name } = request.params;
+  //   const roomIndex = rooms.findIndex((room) => room.id === roomId);
+  //   const room = rooms[roomIndex];
 
-    const { roomId, name } = request.params;
-    const roomIndex = rooms.findIndex((room) => room.id === roomId);
-    const room = rooms[roomIndex];
+  //   if (room) {
+  //     const headers = {
+  //       'Content-Type': 'text/event-stream',
+  //       Connection: 'keep-alive',
+  //       'Cache-Control': 'no-cache',
+  //     };
 
-    if (room) {
-      const headers = {
-        "Content-Type": "text/event-stream",
-        Connection: "keep-alive",
-        "Cache-Control": "no-cache",
-      };
+  //     response.writeHead(200, headers);
 
-      response.writeHead(200, headers);
+  // const newClient = {
+  //   id: uuid(),
+  //   name,
+  //   response,
+  //   understandStatus: UnderstandStatus.EMPTY,
+  // };
 
-      const newClient = {
-        id: uuid(),
-        name,
-        response,
-        understandStatus: UnderstandStatus.EMPTY,
-      };
+  //     response.write(
+  //       'data: ' +
+  //         JSON.stringify({
+  //           info: room.info,
+  //           name: newClient.name,
+  //           clientId: newClient.id,
+  //           understandStatus: UnderstandStatus.EMPTY,
+  //         }) +
+  //         '\n\n'
+  //     );
 
-      response.write(
-        "data: " +
-          JSON.stringify({
-            info: room.info,
-            name: newClient.name,
-            clientId: newClient.id,
-            understandStatus: UnderstandStatus.EMPTY,
-          }) +
-          "\n\n"
-      );
+  // room.clients.push(newClient);
 
-      room.clients.push(newClient);
+  //     const roomClients = room.clients.map((client) => ({
+  //       id: client.id,
+  //       name: client.name,
+  //       understandStatus: client.understandStatus,
+  //     }));
 
-      const roomClients = room.clients.map((client) => ({
-        id: client.id,
-        name: client.name,
-        understandStatus: client.understandStatus,
-      }));
+  //     if (room.admin.response) {
+  //       room.admin.response?.write(
+  //         'data: ' +
+  //           JSON.stringify({
+  //             clients: roomClients,
+  //           }) +
+  //           '\n\n'
+  //       );
+  //     }
 
-      if (room.admin.response) {
-        room.admin.response?.write(
-          "data: " +
-            JSON.stringify({
-              clients: roomClients,
-            }) +
-            "\n\n"
-        );
-      }
-
-      request.on("close", () => {
-        console.log(`${newClient.id} connection closed`);
-        room.clients = room.clients.filter(
-          (client) => client.id !== newClient.id
-        );
-      });
-    } else {
-      response.json({ message: "Room is not found" });
-      request.on("close", () => {
-        console.log(`${roomId} is not found, connection closed`);
-      });
-    }
-  }
+  //     request.on('close', () => {
+  //       console.log(`${newClient.id} connection closed`);
+  //       room.clients = room.clients.filter(
+  //         (client) => client.id !== newClient.id
+  //       );
+  //     });
+  //   } else {
+  //     response.json({ message: 'Room is not found' });
+  //     request.on('close', () => {
+  //       console.log(`${roomId} is not found, connection closed`);
+  //     });
+  //   }
+  // }
 
   static addInfo(request: Request, response: Response) {
     const { roomId } = request.params;
@@ -146,17 +180,18 @@ class TestController {
     const room = rooms[roomIndex];
 
     room.info.push(info);
-    response.status(200).json({ roomId, info });
 
-    room.clients.forEach((client) =>
-      client.response.write(
-        "data: " + JSON.stringify({ info: room.info }) + "\n\n"
-      )
-    );
+    response.status(200).json({ message: 'Info received' });
 
-    room.admin.response?.write(
-      "data: " + JSON.stringify({ info: room.info }) + "\n\n"
-    );
+    // room.clients.forEach((client) =>
+    //   client.response.write(
+    //     'data: ' + JSON.stringify({ info: room.info }) + '\n\n'
+    //   )
+    // );
+
+    // room.admin.response?.write(
+    //   'data: ' + JSON.stringify({ info: room.info }) + '\n\n'
+    // );
   }
 
   static changeUnderstandStatus(request: Request, response: Response) {
@@ -171,73 +206,51 @@ class TestController {
 
     client.understandStatus = understandStatus as UnderstandStatus;
 
+    response.status(200).json({ message: 'Status changed' });
+
     // Update for admin page
-    const roomClients = room.clients.map((client) => ({
-      id: client.id,
-      name: client.name,
-      understandStatus: client.understandStatus,
-    }));
+    // const roomClients = room.clients.map((client) => ({
+    //   id: client.id,
+    //   name: client.name,
+    //   understandStatus: client.understandStatus,
+    // }));
 
-    if (room.admin.response) {
-      room.admin.response?.write(
-        "data: " +
-          JSON.stringify({
-            clients: roomClients,
-          }) +
-          "\n\n"
-      );
-    }
+    // if (room.admin.response) {
+    //   room.admin.response?.write(
+    //     'data: ' +
+    //       JSON.stringify({
+    //         clients: roomClients,
+    //       }) +
+    //       '\n\n'
+    //   );
+    // }
   }
 
-  static joinRoomAdmin(request: Request, response: Response) {
-    const { roomId } = request.params;
-    const roomIndex = rooms.findIndex((room) => room.id === roomId);
-    const room = rooms[roomIndex];
+  // static joinRoomAdmin(request: Request, response: Response) {
+  //   const { roomId } = request.params;
+  //   const roomIndex = rooms.findIndex((room) => room.id === roomId);
+  //   const room = rooms[roomIndex];
 
-    if (room) {
-      const headers = {
-        "Content-Type": "text/event-stream",
-        Connection: "keep-alive",
-        "Cache-Control": "no-cache",
-      };
-      response.writeHead(200, headers);
+  //   if (room) {
+  //     const admin = {
+  //       id: uuid(),
+  //     };
 
-      const admin = {
-        id: uuid(),
-        response,
-      };
+  //     room.admin = admin;
 
-      room.admin = admin;
-
-      // Update for admin page
-      const roomClients = room.clients.map((client) => ({
-        id: client.id,
-        name: client.name,
-        understandStatus: client.understandStatus,
-      }));
-
-      response.write(
-        "data: " +
-          JSON.stringify({
-            id: room.id,
-            adminId: room.admin.id,
-            info: room.info,
-            clients: roomClients,
-          }) +
-          "\n\n"
-      );
-
-      request.on("close", () => {
-        console.log(`Admin ${admin.id} connection closed`);
-        room.clients = room.clients.filter((client) => client.id !== admin.id);
-      });
-    } else {
-      response.json({ message: "Room is not found" });
-      request.on("close", () => {
-        console.log(`${roomId} is not found, connection closed`);
-      });
-    }
-  }
+  //     // Update for admin page
+  //     // const roomClients = room.clients.map((client) => ({
+  //     //   id: client.id,
+  //     //   name: client.name,
+  //     //   understandStatus: client.understandStatus,
+  //     // }));
+  //   } else {
+  //     response.json({ message: 'Room is not found' });
+  //     // request.on('close', () => {
+  //     //   console.log(`${roomId} is not found, connection closed`);
+  //     // });
+  //   }
+  // }
 
   static resetAllUnderstandStatus(request: Request, response: Response) {
     const { roomId } = request.params;
@@ -249,31 +262,23 @@ class TestController {
       (client) => (client.understandStatus = UnderstandStatus.EMPTY)
     );
 
+    response.status(200).json({ message: 'Success reset all status' });
+
     // Update for client page
-    room.clients.forEach((client) =>
-      client.response.write(
-        "data: " +
-          JSON.stringify({ understandStatus: client.understandStatus }) +
-          "\n\n"
-      )
-    );
+    // room.clients.forEach((client) =>
+    //   client.response.write(
+    //     'data: ' +
+    //       JSON.stringify({ understandStatus: client.understandStatus }) +
+    //       '\n\n'
+    //   )
+    // );
 
     // Update for admin page
-    const roomClients = room.clients.map((client) => ({
-      id: client.id,
-      name: client.name,
-      understandStatus: client.understandStatus,
-    }));
-
-    if (room.admin.response) {
-      room.admin.response?.write(
-        "data: " +
-          JSON.stringify({
-            clients: roomClients,
-          }) +
-          "\n\n"
-      );
-    }
+    // const roomClients = room.clients.map((client) => ({
+    //   id: client.id,
+    //   name: client.name,
+    //   understandStatus: client.understandStatus,
+    // }));
   }
 }
 

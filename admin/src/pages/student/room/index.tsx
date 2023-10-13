@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useInterval } from '@/lib/useInterval';
 
 enum UnderstandStatus {
   YES = 'YES',
@@ -24,28 +25,65 @@ function App() {
   const [understandStatus, setUnderstandStatus] = useState<UnderstandStatus>(
     UnderstandStatus.EMPTY
   );
-  const [clientId, setClientId] = useState<string>('');
+  // const [clientId, setClientId] = useState<string>('');
   const [listening, setListening] = useState(false);
   const [failedStatus, setFailedStatus] = useState(false);
 
   const roomId = localStorage.getItem('roomId');
   const name = localStorage.getItem('name');
+  const clientId = localStorage.getItem('clientId');
 
-  if (!listening) {
-    const events = new EventSource(`${baseUrl}/join-room/${roomId}/${name}`);
+  // if (!listening) {
+  //   const events = new EventSource(`${baseUrl}/join-room/${roomId}/${name}`);
 
-    events.onopen = () => {
-      console.log('Success join the room');
-    };
+  //   events.onopen = () => {
+  //     console.log('Success join the room');
+  //   };
 
-    events.onmessage = (event) => {
-      console.log(event.data);
+  //   events.onmessage = (event) => {
+  //     console.log(event.data);
 
-      const parsedData: RoomClientMessage = JSON.parse(event.data);
+  //     const parsedData: RoomClientMessage = JSON.parse(event.data);
 
-      if (parsedData.clientId) {
-        setClientId(parsedData.clientId);
-      }
+  //     if (parsedData.clientId) {
+  //       setClientId(parsedData.clientId);
+  //     }
+
+  //     if (parsedData.understandStatus) {
+  //       setUnderstandStatus(parsedData.understandStatus);
+  //     }
+
+  //     if (parsedData.info) {
+  //       setFacts(parsedData.info);
+  //     }
+  //   };
+
+  //   events.onerror = () => {
+  //     events.close();
+  //     setFailedStatus(true);
+  //   };
+
+  //   setListening(true);
+  // }
+
+  useInterval(() => {
+    async function fetchData() {
+      const res = await fetch(
+        `${baseUrl}/listen-client/${roomId}/${clientId}`,
+        {
+          method: 'GET',
+        }
+      );
+      const parsedData: RoomClientMessage = await res.json();
+
+      console.log(parsedData);
+
+      // const parsedData: RoomMessage = JSON.parse(json);
+      // console.log(json);
+
+      // if (parsedData.id) {
+      //   setClientId(parsedData.clientId);
+      // }
 
       if (parsedData.understandStatus) {
         setUnderstandStatus(parsedData.understandStatus);
@@ -54,15 +92,10 @@ function App() {
       if (parsedData.info) {
         setFacts(parsedData.info);
       }
-    };
+    }
 
-    events.onerror = () => {
-      events.close();
-      setFailedStatus(true);
-    };
-
-    setListening(true);
-  }
+    fetchData();
+  }, 1000);
 
   async function changeStatus(status: UnderstandStatus) {
     setUnderstandStatus(status);
