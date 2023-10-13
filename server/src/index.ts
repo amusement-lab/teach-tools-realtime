@@ -28,7 +28,7 @@ app.post(
   TestController.resetAllUnderstandStatus
 );
 
-const PORT = 3001;
+const PORT = 3000;
 
 app.listen(PORT, () => {
   console.log(`Facts Events service listening at http://localhost:${PORT}`);
