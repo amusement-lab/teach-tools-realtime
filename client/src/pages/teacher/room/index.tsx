@@ -12,28 +12,26 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useInterval } from '@/lib/useInterval';
 
 function Room() {
   const [facts, setFacts] = useState<string[]>([]);
   const [adminId, setAdminId] = useState<string>('');
   const [clients, setClients] = useState<Client[]>([]);
-  const [listening, setListening] = useState(false);
   const [failedStatus, setFailedStatus] = useState(false);
+  const [delay, setDelay] = useState<number | null>(1000); //delay can be null for break the interval
 
   const roomId = localStorage.getItem('roomId');
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-  if (!listening) {
-    const events = new EventSource(`${baseUrl}/join-room-admin/${roomId}`);
+  useInterval(() => {
+    async function fetchData() {
+      const res = await fetch(`${baseUrl}/listen-admin/${roomId}`, {
+        method: 'GET',
+      });
+      const parsedData: RoomMessage = await res.json();
 
-    events.onopen = () => {
-      console.log('Success join the room');
-    };
-
-    events.onmessage = (event) => {
-      console.log(event.data);
-
-      const parsedData: RoomMessage = JSON.parse(event.data);
+      console.log(parsedData);
 
       if (parsedData.adminId) {
         setAdminId(parsedData.adminId);
@@ -46,15 +44,15 @@ function Room() {
       if (parsedData.info) {
         setFacts(parsedData.info);
       }
-    };
 
-    events.onerror = () => {
-      events.close();
-      setFailedStatus(true);
-    };
+      if (parsedData.message === 'Room not found') {
+        setDelay(null);
+        setFailedStatus(true);
+      }
+    }
 
-    setListening(true);
-  }
+    fetchData();
+  }, delay);
 
   const [info, setInfo] = useState<string>('');
 

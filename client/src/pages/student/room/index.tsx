@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RoomClientMessage } from '../../entities/room.entity';
+import { RoomClientMessage } from '../../../entities/room.entity';
 
 import {
   Card,
@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useInterval } from '@/lib/useInterval';
 
 enum UnderstandStatus {
   YES = 'YES',
@@ -24,28 +25,25 @@ function App() {
   const [understandStatus, setUnderstandStatus] = useState<UnderstandStatus>(
     UnderstandStatus.EMPTY
   );
-  const [clientId, setClientId] = useState<string>('');
-  const [listening, setListening] = useState(false);
+
   const [failedStatus, setFailedStatus] = useState(false);
+  const [delay, setDelay] = useState<number | null>(1000); //delay can be null for break the interval
 
   const roomId = localStorage.getItem('roomId');
   const name = localStorage.getItem('name');
+  const clientId = localStorage.getItem('clientId');
 
-  if (!listening) {
-    const events = new EventSource(`${baseUrl}/join-room/${roomId}/${name}`);
+  useInterval(() => {
+    async function fetchData() {
+      const res = await fetch(
+        `${baseUrl}/listen-client/${roomId}/${clientId}`,
+        {
+          method: 'GET',
+        }
+      );
+      const parsedData: RoomClientMessage = await res.json();
 
-    events.onopen = () => {
-      console.log('Success join the room');
-    };
-
-    events.onmessage = (event) => {
-      console.log(event.data);
-
-      const parsedData: RoomClientMessage = JSON.parse(event.data);
-
-      if (parsedData.clientId) {
-        setClientId(parsedData.clientId);
-      }
+      console.log(parsedData.message);
 
       if (parsedData.understandStatus) {
         setUnderstandStatus(parsedData.understandStatus);
@@ -54,15 +52,15 @@ function App() {
       if (parsedData.info) {
         setFacts(parsedData.info);
       }
-    };
 
-    events.onerror = () => {
-      events.close();
-      setFailedStatus(true);
-    };
+      if (parsedData.message === 'Room not found') {
+        setDelay(null);
+        setFailedStatus(true);
+      }
+    }
 
-    setListening(true);
-  }
+    fetchData();
+  }, delay);
 
   async function changeStatus(status: UnderstandStatus) {
     setUnderstandStatus(status);

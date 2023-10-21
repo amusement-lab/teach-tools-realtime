@@ -11,6 +11,9 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { JoinClientRoom } from '@/entities/room.entity';
+
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 function JoinOrCreateRoom() {
   const [roomId, setRoomId] = useState<string>('');
@@ -20,9 +23,19 @@ function JoinOrCreateRoom() {
 
   async function joinRoom(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    localStorage.setItem('roomId', roomId);
-    localStorage.setItem('name', name);
-    navigate('/room');
+
+    const res = await fetch(`${baseUrl}/join-client-room/${roomId}/${name}`, {
+      method: 'GET',
+    });
+    console.log(res);
+    const room: JoinClientRoom = await res.json();
+
+    if (room) {
+      localStorage.setItem('roomId', roomId);
+      localStorage.setItem('name', name);
+      localStorage.setItem('clientId', room.id); //this is mean clientID, need refactor;
+      navigate('/room');
+    }
   }
 
   return (
