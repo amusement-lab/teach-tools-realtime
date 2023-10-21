@@ -25,46 +25,13 @@ function App() {
   const [understandStatus, setUnderstandStatus] = useState<UnderstandStatus>(
     UnderstandStatus.EMPTY
   );
-  // const [clientId, setClientId] = useState<string>('');
-  const [listening, setListening] = useState(false);
+
   const [failedStatus, setFailedStatus] = useState(false);
+  const [delay, setDelay] = useState<number | null>(1000); //delay can be null for break the interval
 
   const roomId = localStorage.getItem('roomId');
   const name = localStorage.getItem('name');
   const clientId = localStorage.getItem('clientId');
-
-  // if (!listening) {
-  //   const events = new EventSource(`${baseUrl}/join-room/${roomId}/${name}`);
-
-  //   events.onopen = () => {
-  //     console.log('Success join the room');
-  //   };
-
-  //   events.onmessage = (event) => {
-  //     console.log(event.data);
-
-  //     const parsedData: RoomClientMessage = JSON.parse(event.data);
-
-  //     if (parsedData.clientId) {
-  //       setClientId(parsedData.clientId);
-  //     }
-
-  //     if (parsedData.understandStatus) {
-  //       setUnderstandStatus(parsedData.understandStatus);
-  //     }
-
-  //     if (parsedData.info) {
-  //       setFacts(parsedData.info);
-  //     }
-  //   };
-
-  //   events.onerror = () => {
-  //     events.close();
-  //     setFailedStatus(true);
-  //   };
-
-  //   setListening(true);
-  // }
 
   useInterval(() => {
     async function fetchData() {
@@ -76,14 +43,7 @@ function App() {
       );
       const parsedData: RoomClientMessage = await res.json();
 
-      console.log(parsedData);
-
-      // const parsedData: RoomMessage = JSON.parse(json);
-      // console.log(json);
-
-      // if (parsedData.id) {
-      //   setClientId(parsedData.clientId);
-      // }
+      console.log(parsedData.message);
 
       if (parsedData.understandStatus) {
         setUnderstandStatus(parsedData.understandStatus);
@@ -92,10 +52,15 @@ function App() {
       if (parsedData.info) {
         setFacts(parsedData.info);
       }
+
+      if (parsedData.message === 'Room not found') {
+        setDelay(null);
+        setFailedStatus(true);
+      }
     }
 
     fetchData();
-  }, 1000);
+  }, delay);
 
   async function changeStatus(status: UnderstandStatus) {
     setUnderstandStatus(status);

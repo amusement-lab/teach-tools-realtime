@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Client, RoomMessage } from '@/entities/room.entity';
@@ -18,56 +18,11 @@ function Room() {
   const [facts, setFacts] = useState<string[]>([]);
   const [adminId, setAdminId] = useState<string>('');
   const [clients, setClients] = useState<Client[]>([]);
-  const [listening, setListening] = useState(false);
   const [failedStatus, setFailedStatus] = useState(false);
+  const [delay, setDelay] = useState<number | null>(1000); //delay can be null for break the interval
 
   const roomId = localStorage.getItem('roomId');
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
-
-  // if (!listening) {
-  //   const events = new EventSource(`${baseUrl}/join-room-admin/${roomId}`);
-
-  //   events.onopen = () => {
-  //     console.log('Success join the room');
-  //   };
-
-  //   events.onmessage = (event) => {
-  //     console.log(event.data);
-
-  //     const parsedData: RoomMessage = JSON.parse(event.data);
-
-  //     if (parsedData.adminId) {
-  //       setAdminId(parsedData.adminId);
-  //     }
-
-  //     if (parsedData.clients) {
-  //       setClients(parsedData.clients);
-  //     }
-
-  //     if (parsedData.info) {
-  //       setFacts(parsedData.info);
-  //     }
-  //   };
-
-  //   events.onerror = () => {
-  //     events.close();
-  //     setFailedStatus(true);
-  //   };
-
-  //   setListening(true);
-  // }
-
-  // useEffect(() => {
-  //   async function fetchData() {
-  //     const res = await fetch(`${baseUrl}/reset-understand-status/${roomId}`, {
-  //       method: 'GET',
-  //     });
-  //     const json = await res.json();
-  //     console.log(json);
-  //   }
-
-  //   fetchData();
-  // });
 
   useInterval(() => {
     async function fetchData() {
@@ -77,9 +32,6 @@ function Room() {
       const parsedData: RoomMessage = await res.json();
 
       console.log(parsedData);
-
-      // const parsedData: RoomMessage = JSON.parse(json);
-      // console.log(json);
 
       if (parsedData.adminId) {
         setAdminId(parsedData.adminId);
@@ -92,10 +44,15 @@ function Room() {
       if (parsedData.info) {
         setFacts(parsedData.info);
       }
+
+      if (parsedData.message === 'Room not found') {
+        setDelay(null);
+        setFailedStatus(true);
+      }
     }
 
     fetchData();
-  }, 1000);
+  }, delay);
 
   const [info, setInfo] = useState<string>('');
 

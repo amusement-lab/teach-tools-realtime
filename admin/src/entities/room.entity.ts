@@ -20,6 +20,7 @@ export interface RoomMessage {
   adminId: string;
   info: string[];
   clients: Client[];
+  message?: string;
 }
 
 export interface JoinClientRoom {
@@ -31,4 +32,5 @@ export interface RoomClientMessage {
   name: string;
   info: string[];
   understandStatus: UnderstandStatus;
+  message?: string;
 }
