@@ -87,7 +87,15 @@ function App() {
           <Button onClick={onBackToHome}>Back to home</Button>
         </section>
       ) : (
-        <section className="flex gap-[40px] h-screen">
+        <section
+          className={
+            understandStatus === 'YES'
+              ? 'bg-red-400 flex gap-[40px] h-screen'
+              : understandStatus === 'NO'
+              ? 'bg-green-400 flex gap-[40px] h-screen'
+              : 'flex gap-[40px] h-screen'
+          }
+        >
           <div className="flex flex-col w-full p-[40px] pr-[400px]">
             <div className="flex flex-col">
               <span>Room Id : {localStorage.getItem('roomId')}</span>
@@ -103,6 +111,7 @@ function App() {
                 <Button
                   className="bg-red-500"
                   onClick={() => changeStatus(UnderstandStatus.YES)}
+                  disabled={understandStatus === 'YES'}
                 >
                   Yes, I Need!
                 </Button>
@@ -110,6 +119,7 @@ function App() {
                 <Button
                   className="bg-green-500"
                   onClick={() => changeStatus(UnderstandStatus.NO)}
+                  disabled={understandStatus === 'NO'}
                 >
                   No, Im Good
                 </Button>
