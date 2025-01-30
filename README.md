@@ -2,7 +2,7 @@
 
 Basic implementation for polling
 
-Client : React 18
-Server : Express
-Package manager : PNPM 8
-JS Runtime : Node 18.18.0
+Client : React 18.2.0
+Server : Express 5.0.1
+Package manager : PNPM 9.15.4
+JS Runtime : NodeJS 22.13.0
