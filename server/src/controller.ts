@@ -1,18 +1,10 @@
-import { Request, Response } from 'express';
-import { v4 as uuid } from 'uuid';
-
-interface Fact {
-  source: string;
-  info: string;
-}
-
-let clients: { id: number; response: Response }[] = [];
-let facts: Fact[] = [];
+import { Request, Response } from "express";
+import { v4 as uuid } from "uuid";
 
 enum UnderstandStatus {
-  YES = 'YES',
-  NO = 'NO',
-  EMPTY = 'EMPTY',
+  YES = "YES",
+  NO = "NO",
+  EMPTY = "EMPTY",
 }
 
 interface Room {
@@ -31,10 +23,13 @@ interface Room {
 const rooms: Room[] = [];
 
 class TestController {
-  static statusAdminRoom(request: Request, response: Response) {
-    const { roomId } = request.params;
+  static findRoom(roomId: string): Room {
     const roomIndex = rooms.findIndex((room) => room.id === roomId);
-    const room = rooms[roomIndex];
+    return rooms[roomIndex];
+  }
+
+  static statusAdminRoom(request: Request, response: Response) {
+    const room = TestController.findRoom(request.params.roomId);
 
     if (room) {
       response.json({
@@ -45,30 +40,30 @@ class TestController {
       });
     } else if (!room) {
       response.status(404).json({
-        message: 'Room not found',
+        message: "Room not found",
       });
     }
   }
 
   static statusClientRoom(request: Request, response: Response) {
-    const { roomId, clientId, name } = request.params;
-    const roomIndex = rooms.findIndex((room) => room.id === roomId);
-    const room = rooms[roomIndex];
+    const { roomId, clientId } = request.params;
+
+    const room = TestController.findRoom(roomId);
 
     if (room) {
       const client = room.clients.findIndex((client) => client.id === clientId);
       response.json({ ...room.clients[client], info: room.info });
     } else if (!room) {
       response.status(404).json({
-        message: 'Room not found',
+        message: "Room not found",
       });
     }
   }
 
   static joinClientRoom(request: Request, response: Response) {
     const { roomId, name } = request.params;
-    const roomIndex = rooms.findIndex((room) => room.id === roomId);
-    const room = rooms[roomIndex];
+
+    const room = TestController.findRoom(roomId);
 
     if (room) {
       const newClient = {
@@ -82,7 +77,7 @@ class TestController {
       response.json({ ...newClient, info: room.info });
     } else if (!room) {
       response.status(404).json({
-        message: 'Room not found',
+        message: "Room not found",
       });
     }
   }
@@ -96,29 +91,30 @@ class TestController {
       },
       clients: [],
     };
+
     rooms.push(roomData);
+
     response
       .status(201)
-      .json({ id: roomData.id, message: 'Success create room' });
+      .json({ id: roomData.id, message: "Success create room" });
   }
 
   static addInfo(request: Request, response: Response) {
     const { roomId } = request.params;
     const { info } = request.body;
 
-    const roomIndex = rooms.findIndex((room) => room.id === roomId);
-    const room = rooms[roomIndex];
+    const room = TestController.findRoom(roomId);
 
     room.info.push(info);
 
-    response.status(200).json({ message: 'Info received' });
+    response.status(200).json({ message: "Info received" });
   }
 
   static changeUnderstandStatus(request: Request, response: Response) {
     const { roomId, clientId, understandStatus } = request.params;
 
-    const roomIndex = rooms.findIndex((room) => room.id === roomId);
-    const room = rooms[roomIndex];
+    const room = TestController.findRoom(roomId);
+
     const clientIndex = room.clients.findIndex(
       (client) => client.id === clientId
     );
@@ -126,21 +122,22 @@ class TestController {
 
     client.understandStatus = understandStatus as UnderstandStatus;
 
-    response.status(200).json({ message: 'Status changed' });
+    response.status(200).json({ message: "Status changed" });
   }
 
   static resetAllUnderstandStatus(request: Request, response: Response) {
     const { roomId } = request.params;
 
-    const roomIndex = rooms.findIndex((room) => room.id === roomId);
-    const room = rooms[roomIndex];
+    const room = TestController.findRoom(roomId);
 
     room.clients.forEach(
       (client) => (client.understandStatus = UnderstandStatus.EMPTY)
     );
 
-    response.status(200).json({ message: 'Success reset all status' });
+    response.status(200).json({ message: "Success reset all status" });
   }
 }
+
+class AdminController {}
 
 export default TestController;
