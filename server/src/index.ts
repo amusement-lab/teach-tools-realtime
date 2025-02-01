@@ -1,9 +1,9 @@
-import express, { Express } from 'express';
-import cors from 'cors';
-import morgan from 'morgan';
-import dotenv from 'dotenv';
+import express, { Express } from "express";
+import cors from "cors";
+import morgan from "morgan";
+import dotenv from "dotenv";
 
-import TestController from './controller';
+import TestController from "./controller";
 
 dotenv.config();
 
@@ -12,19 +12,19 @@ const app: Express = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 
-app.get('/listen-admin/:roomId', TestController.statusAdminRoom);
-app.get('/listen-client/:roomId/:clientId', TestController.statusClientRoom);
-app.get('/join-client-room/:roomId/:name', TestController.joinClientRoom);
-app.post('/create-room', TestController.createRoom);
-app.post('/add-info/:roomId', TestController.addInfo);
+app.get("/listen-admin/:roomId/:adminId", TestController.statusAdminRoom);
+app.get("/listen-client/:roomId/:clientId", TestController.statusClientRoom);
+app.get("/join-client-room/:roomId/:name", TestController.joinClientRoom);
+app.post("/create-room", TestController.createRoom);
+app.post("/add-info/:roomId", TestController.addInfo);
 app.post(
-  '/change-understand-status/:roomId/:clientId/:understandStatus',
+  "/change-understand-status/:roomId/:clientId/:understandStatus",
   TestController.changeUnderstandStatus
 );
 app.post(
-  '/reset-understand-status/:roomId',
+  "/reset-understand-status/:roomId",
   TestController.resetAllUnderstandStatus
 );
 

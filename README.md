@@ -1,6 +1,6 @@
 # teach-tools-realtime
 
-Basic implementation for polling
+Basic implementation for server side event (SSE)
 
 Client : React 18.2.0
 Server : Express 5.0.1

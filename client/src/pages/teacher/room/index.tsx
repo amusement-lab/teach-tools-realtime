@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-import { Client, RoomMessage } from '@/entities/room.entity';
+import { Client, RoomMessage } from "@/entities/room.entity";
 import {
   Card,
   CardContent,
@@ -9,72 +9,76 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { useInterval } from '@/lib/useInterval';
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useInterval } from "@/lib/useInterval";
 
 function Room() {
   const [facts, setFacts] = useState<string[]>([]);
-  const [adminId, setAdminId] = useState<string>('');
+  // const [adminId, setAdminId] = useState<string>("");
   const [clients, setClients] = useState<Client[]>([]);
   const [failedStatus, setFailedStatus] = useState(false);
   const [delay, setDelay] = useState<number | null>(1000); //delay can be null for break the interval
+  const [listening, setListening] = useState(false);
 
-  const roomId = localStorage.getItem('roomId');
+  const roomId = localStorage.getItem("roomId");
+  const adminId = localStorage.getItem("adminId");
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-  useInterval(() => {
-    async function fetchData() {
-      const res = await fetch(`${baseUrl}/listen-admin/${roomId}`, {
-        method: 'GET',
-      });
-      const parsedData: RoomMessage = await res.json();
+  useEffect(() => {
+    if (!listening) {
+      const events = new EventSource(
+        `${baseUrl}/listen-admin/${roomId}/${adminId}`
+      );
 
-      console.log(parsedData);
+      events.onmessage = (event) => {
+        const parsedData = JSON.parse(event.data);
 
-      if (parsedData.adminId) {
-        setAdminId(parsedData.adminId);
-      }
+        console.log(parsedData);
 
-      if (parsedData.clients) {
-        setClients(parsedData.clients);
-      }
+        if (parsedData.clients) {
+          setClients(parsedData.clients);
+        }
 
-      if (parsedData.info) {
-        setFacts(parsedData.info);
-      }
+        if (parsedData.info) {
+          setFacts(parsedData.info);
+        }
 
-      if (parsedData.message === 'Room not found') {
-        setDelay(null);
+        setListening(true);
+        console.log(listening);
+      };
+
+      events.onerror = (event) => {
+        events.close();
+        console.log(event);
         setFailedStatus(true);
-      }
+        setListening(true);
+      };
     }
+  }, [listening, facts, baseUrl, roomId, adminId]);
 
-    fetchData();
-  }, delay);
-
-  const [info, setInfo] = useState<string>('');
+  const [info, setInfo] = useState<string>("");
 
   async function onSubmitInfo(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     console.log(roomId);
     const res = await fetch(`${baseUrl}/add-info/${roomId}`, {
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ info }),
-      method: 'POST',
+      method: "POST",
     });
     const json = await res.json();
-    setInfo('');
+    setInfo("");
     console.log(json);
   }
 
   async function onResetStatus() {
-    console.log('Reset Clicked');
+    console.log("Reset Clicked");
     const res = await fetch(`${baseUrl}/reset-understand-status/${roomId}`, {
-      method: 'POST',
+      method: "POST",
     });
     const json = await res.json();
     console.log(json);
@@ -83,7 +87,7 @@ function Room() {
   const navigate = useNavigate();
 
   function onBackToHome() {
-    navigate('/admin');
+    navigate("/admin");
   }
 
   return (
@@ -100,7 +104,7 @@ function Room() {
               <div className="flex flex-col">
                 <span className="font-bold">Admin Id : {adminId}</span>
                 <span className="font-bold">
-                  Room Id : {localStorage.getItem('roomId')}
+                  Room Id : {localStorage.getItem("roomId")}
                 </span>
               </div>
 
@@ -117,11 +121,11 @@ function Room() {
                 <Card
                   key={client.id}
                   className={
-                    client.understandStatus === 'YES'
-                      ? 'bg-red-200'
-                      : client.understandStatus === 'NO'
-                      ? 'bg-green-200'
-                      : ''
+                    client.understandStatus === "YES"
+                      ? "bg-red-200"
+                      : client.understandStatus === "NO"
+                      ? "bg-green-200"
+                      : ""
                   }
                 >
                   <CardHeader>
@@ -129,9 +133,9 @@ function Room() {
                   </CardHeader>
 
                   <CardContent>
-                    {client.understandStatus === 'YES' ? (
+                    {client.understandStatus === "YES" ? (
                       <p className="text-md font-medium">Need Help!</p>
-                    ) : client.understandStatus === 'NO' ? (
+                    ) : client.understandStatus === "NO" ? (
                       <p className="text-md font-medium">All Good!</p>
                     ) : (
                       <p className="text-md font-medium">-</p>

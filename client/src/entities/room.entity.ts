@@ -1,12 +1,13 @@
 export interface RoomCreatedResponse {
-  id: string;
+  roomId: string;
+  adminId: string;
   message: string;
 }
 
 export enum UnderstandStatus {
-  YES = 'YES',
-  NO = 'NO',
-  EMPTY = 'EMPTY',
+  YES = "YES",
+  NO = "NO",
+  EMPTY = "EMPTY",
 }
 
 export interface Client {

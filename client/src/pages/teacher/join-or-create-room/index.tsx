@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { RoomCreatedResponse } from '../../../entities/room.entity';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { RoomCreatedResponse } from "../../../entities/room.entity";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
   CardContent,
@@ -10,12 +10,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 function JoinOrCreateRoom() {
-  const [roomId, setRoomId] = useState<string>('');
+  const [roomId, setRoomId] = useState<string>("");
+  const [adminId, setAdminId] = useState<string>("");
 
   const navigate = useNavigate();
 
@@ -23,17 +24,19 @@ function JoinOrCreateRoom() {
 
   async function createRoom() {
     const res = await fetch(`${baseUrl}/create-room`, {
-      method: 'POST',
+      method: "POST",
     });
     const room: RoomCreatedResponse = await res.json();
-    localStorage.setItem('roomId', room.id);
-    navigate('/admin/room');
+    localStorage.setItem("roomId", room.roomId);
+    localStorage.setItem("adminId", room.adminId);
+    navigate("/admin/room");
   }
 
   async function joinRoom(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    localStorage.setItem('roomId', roomId);
-    navigate('/admin/room');
+    localStorage.setItem("roomId", roomId);
+    localStorage.setItem("adminId", adminId);
+    navigate("/admin/room");
   }
 
   return (
@@ -77,6 +80,15 @@ function JoinOrCreateRoom() {
                     placeholder="Room ID"
                     value={roomId}
                     onChange={(e) => setRoomId(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1 mt-3">
+                  <Input
+                    type="text"
+                    name="adminId"
+                    placeholder="Admin ID"
+                    value={adminId}
+                    onChange={(e) => setAdminId(e.target.value)}
                   />
                 </div>
               </CardContent>

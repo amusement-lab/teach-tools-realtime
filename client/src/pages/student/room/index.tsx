@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { RoomClientMessage } from '../../../entities/room.entity';
+import { useEffect, useState } from "react";
+import { RoomClientMessage } from "../../../entities/room.entity";
 
 import {
   Card,
@@ -7,15 +7,15 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { useInterval } from '@/lib/useInterval';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useInterval } from "@/lib/useInterval";
 
 enum UnderstandStatus {
-  YES = 'YES',
-  NO = 'NO',
-  EMPTY = 'EMPTY',
+  YES = "YES",
+  NO = "NO",
+  EMPTY = "EMPTY",
 }
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -25,49 +25,53 @@ function App() {
   const [understandStatus, setUnderstandStatus] = useState<UnderstandStatus>(
     UnderstandStatus.EMPTY
   );
+  const [listening, setListening] = useState(false);
 
   const [failedStatus, setFailedStatus] = useState(false);
   const [delay, setDelay] = useState<number | null>(1000); //delay can be null for break the interval
 
-  const roomId = localStorage.getItem('roomId');
-  const name = localStorage.getItem('name');
-  const clientId = localStorage.getItem('clientId');
+  const roomId = localStorage.getItem("roomId");
+  const name = localStorage.getItem("name");
+  const clientId = localStorage.getItem("clientId");
 
-  useInterval(() => {
-    async function fetchData() {
-      const res = await fetch(
-        `${baseUrl}/listen-client/${roomId}/${clientId}`,
-        {
-          method: 'GET',
-        }
+  useEffect(() => {
+    if (!listening) {
+      const events = new EventSource(
+        `${baseUrl}/listen-client/${roomId}/${clientId}`
       );
-      const parsedData: RoomClientMessage = await res.json();
 
-      console.log(parsedData.message);
+      events.onmessage = (event) => {
+        const parsedData = JSON.parse(event.data);
 
-      if (parsedData.understandStatus) {
-        setUnderstandStatus(parsedData.understandStatus);
-      }
+        console.log(parsedData);
 
-      if (parsedData.info) {
-        setFacts(parsedData.info);
-      }
+        if (parsedData.understandStatus) {
+          setUnderstandStatus(parsedData.understandStatus);
+        }
 
-      if (parsedData.message === 'Room not found') {
-        setDelay(null);
+        if (parsedData.info) {
+          setFacts(parsedData.info);
+        }
+
+        setListening(true);
+        console.log(listening);
+      };
+
+      events.onerror = (event) => {
+        events.close();
+        console.log(event);
         setFailedStatus(true);
-      }
+        setListening(true);
+      };
     }
-
-    fetchData();
-  }, delay);
+  }, [listening, clientId, roomId]);
 
   async function changeStatus(status: UnderstandStatus) {
     setUnderstandStatus(status);
 
     const res = await fetch(
       `${baseUrl}/change-understand-status/${roomId}/${clientId}/${status}`,
-      { method: 'POST' }
+      { method: "POST" }
     );
     const json = await res.json();
     console.log(json);
@@ -76,7 +80,7 @@ function App() {
   const navigate = useNavigate();
 
   function onBackToHome() {
-    navigate('/');
+    navigate("/");
   }
 
   return (
@@ -89,16 +93,16 @@ function App() {
       ) : (
         <section
           className={
-            understandStatus === 'YES'
-              ? 'bg-red-400 flex gap-[40px] h-screen'
-              : understandStatus === 'NO'
-              ? 'bg-green-400 flex gap-[40px] h-screen'
-              : 'flex gap-[40px] h-screen'
+            understandStatus === "YES"
+              ? "bg-red-400 flex gap-[40px] h-screen"
+              : understandStatus === "NO"
+              ? "bg-green-400 flex gap-[40px] h-screen"
+              : "flex gap-[40px] h-screen"
           }
         >
           <div className="flex flex-col w-full p-[40px] pr-[400px]">
             <div className="flex flex-col">
-              <span>Room Id : {localStorage.getItem('roomId')}</span>
+              <span>Room Id : {localStorage.getItem("roomId")}</span>
               <div>Client ID: {clientId}</div>
               <div>Client Name: {name}</div>
               <div>Understand Status: {understandStatus}</div>
@@ -111,7 +115,7 @@ function App() {
                 <Button
                   className="bg-red-500"
                   onClick={() => changeStatus(UnderstandStatus.YES)}
-                  disabled={understandStatus === 'YES'}
+                  disabled={understandStatus === "YES"}
                 >
                   Yes, I Need!
                 </Button>
@@ -119,7 +123,7 @@ function App() {
                 <Button
                   className="bg-green-500"
                   onClick={() => changeStatus(UnderstandStatus.NO)}
-                  disabled={understandStatus === 'NO'}
+                  disabled={understandStatus === "NO"}
                 >
                   No, Im Good
                 </Button>
